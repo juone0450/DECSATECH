@@ -1,0 +1,525 @@
+:root {
+    --bg-main: #0f111a;
+    --bg-card: #1a1d2d;
+    --bg-card-hover: #222639;
+    --accent: #00e5ff;
+    --accent-hover: #00b3cc;
+    --accent-glow: rgba(0, 229, 255, 0.4);
+    --text-main: #f1f2f6;
+    --text-muted: #a4a9b8;
+    --border: #2a2e41;
+    --border-light: rgba(255,255,255,0.05);
+    --danger: #ff4757;
+    --font-family: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* OVERLAY FOR FILE UPLOAD */
+.overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 17, 26, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.upload-card {
+    background: var(--bg-card);
+    padding: 3rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    max-width: 500px;
+    width: 90%;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.upload-card h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+
+.upload-card p {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.upload-btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.upload-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.upload-btn input[type="file"] {
+    display: none;
+}
+
+/* DASHBOARD LAYOUT */
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.accent {
+    color: var(--accent);
+}
+
+.header-info {
+    font-weight: 300;
+    color: var(--text-muted);
+}
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    flex: 1;
+    overflow: hidden;
+}
+
+.panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel h2 {
+    padding: 1.5rem;
+    font-size: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.1);
+}
+
+/* PRODUCTS PANEL */
+.products-panel .filters {
+    padding: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.filters input, .filters select {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-family: var(--font-family);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filters input:focus, .filters select:focus {
+    border-color: var(--accent);
+}
+
+.filters input {
+    flex: 1;
+}
+
+.table-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    z-index: 10;
+}
+
+tbody tr {
+    transition: background 0.2s;
+}
+
+tbody tr:hover {
+    background: var(--bg-card-hover);
+}
+
+.add-btn {
+    background: rgba(0, 229, 255, 0.1);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.add-btn:hover {
+    background: var(--accent);
+    color: #000;
+}
+
+/* BUILD PANEL */
+.build-panel {
+    position: relative;
+}
+
+.cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.empty-cart {
+    text-align: center;
+    color: var(--text-muted);
+    margin-top: 2rem;
+    font-style: italic;
+}
+
+.cart-item {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.cart-item-info h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-main);
+}
+
+.cart-item-info p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.cart-item-price {
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-size: 1.25rem;
+    cursor: pointer;
+    margin-left: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.remove-btn:hover {
+    opacity: 1;
+}
+
+.cart-summary {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.1);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.summary-row.total {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+}
+
+.accent-text {
+    color: var(--accent);
+}
+
+.action-btn {
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: 6px;
+    font-family: var(--font-family);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 0.75rem;
+}
+
+.action-btn.primary {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.action-btn.primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+}
+
+.action-btn.outline {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+
+.action-btn.outline:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: var(--text-muted);
+}
+
+/* SCROLLBARS */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-card);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* DISCOUNT SECTION */
+.discount-section {
+    background: rgba(0,0,0,0.2);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.discount-section label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.discount-section input {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-family: var(--font-family);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 0.75rem;
+}
+
+.discount-section input:focus {
+    border-color: var(--accent);
+}
+
+.discount-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.success-text {
+    color: #2ed573;
+    font-weight: 600;
+}
+
+.warning-text {
+    color: var(--danger);
+    font-weight: 600;
+}
+
+/* CUSTOM HEADER IN BUILD PANEL */
+.panel-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.1);
+}
+
+.panel-header-custom h2 {
+    border-bottom: none;
+    background: transparent;
+    padding-right: 1rem;
+}
+
+.markup-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-right: 1.5rem;
+}
+
+.markup-control label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.markup-control input {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 0.4rem 0.5rem;
+    border-radius: 4px;
+    font-family: var(--font-family);
+    font-weight: 600;
+    outline: none;
+    width: 70px;
+    text-align: center;
+    transition: border-color 0.2s;
+}
+
+.markup-control input:focus {
+    border-color: var(--accent);
+}
+
+.client-input {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-family: var(--font-family);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 1rem;
+}
+
+.client-input:focus {
+    border-color: var(--accent);
+}
+
+#copy-btn {
+    display: none;
+}
+
+/* RESPONSIVE DESIGN (MOBILE) */
+@media (max-width: 900px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+    }
+    
+    .panel {
+        overflow: visible;
+    }
+    
+    .table-container {
+        max-height: 400px;
+    }
+    
+    .filters {
+        flex-direction: column;
+    }
+
+    .panel-header-custom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+    }
+
+    header {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+
+    #export-btn {
+        display: none;
+    }
+
+    #copy-btn {
+        display: block;
+    }
+}

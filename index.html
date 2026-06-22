@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decsatech | Armado de Presupuestos</title>
+    <meta name="description" content="Dashboard para crear presupuestos de PC sumando componentes de la lista de precios Decsatech.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Drag & Drop Overlay for File if fetch fails -->
+    <div id="upload-overlay" class="overlay">
+        <div class="upload-card">
+            <h1 id="upload-title">Bienvenido a Decsatech</h1>
+            <p>Por favor, carga el archivo <strong>Lista_de_Precios_Decsatech.xlsx</strong> para comenzar.</p>
+            <label class="upload-btn">
+                Seleccionar Archivo
+                <input type="file" id="file-input" accept=".xlsx, .xls" />
+            </label>
+        </div>
+    </div>
+
+    <!-- Dashboard Main Layout -->
+    <div id="dashboard" class="dashboard-container" style="display: none;">
+        <header>
+            <div class="logo">DECSATECH <span class="accent">PRO</span></div>
+            <div class="header-info">Presupuestador de Componentes</div>
+        </header>
+
+        <main class="grid-layout">
+            <!-- Left Panel: Products -->
+            <section class="panel products-panel">
+                <h2>Catálogo de Productos</h2>
+                
+                <div class="filters">
+                    <input type="text" id="search-input" placeholder="Buscar por descripción o SKU..." />
+                    <select id="category-filter">
+                        <option value="">Todas las Categorías</option>
+                        <!-- Options generated dynamically -->
+                    </select>
+                    <select id="sort-filter">
+                        <option value="">Sin ordenar</option>
+                        <option value="price-asc">Precio: Menor a Mayor</option>
+                        <option value="price-desc">Precio: Mayor a Menor</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table id="products-table">
+                        <thead>
+                            <tr>
+                                <th>Descripción</th>
+                                <th>Categoría</th>
+                                <th>Precio (ARS)</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Right Panel: Cart / Build -->
+            <section class="panel build-panel">
+                <div class="panel-header-custom">
+                    <h2>Tu Presupuesto</h2>
+                    <div class="markup-control">
+                        <label for="markup-input">Rentabilidad (%):</label>
+                        <input type="number" id="markup-input" value="0" min="0" step="1" title="Porcentaje de aumento para los componentes" />
+                    </div>
+                </div>
+                <div id="cart-items" class="cart-items">
+                    <!-- Cart items populated dynamically -->
+                    <div class="empty-cart">No hay componentes en el presupuesto.</div>
+                </div>
+
+                <div class="cart-summary">
+                    <input type="text" id="client-name-input" class="client-input" placeholder="Nombre del cliente (opcional)..." />
+                    
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal-val">$0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="total-val" class="accent-text">$0.00</span>
+                    </div>
+
+                    <div class="discount-section">
+                        <label for="custom-total-input">Total Personalizado (ARS):</label>
+                        <input type="number" id="custom-total-input" placeholder="Ej: 500000" />
+                        <div id="discount-info" class="discount-info" style="display: none;">
+                            <span>Descuento:</span>
+                            <span id="discount-val" class="success-text">$0.00 (0%)</span>
+                        </div>
+                    </div>
+
+                    <button id="clear-cart-btn" class="action-btn outline">Limpiar Todo</button>
+                    <button id="export-btn" class="action-btn primary">Exportar Presupuesto</button>
+                    <button id="copy-btn" class="action-btn primary">Copiar Presupuesto</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
