@@ -12,14 +12,17 @@
     <script src="xlsx.full.min.js"></script>
 </head>
 <body>
-    <!-- Mobile Desktop Mode Warning Banner -->
-    <div id="mobile-warning-banner" class="mobile-warning">
-        <div class="warning-content">
-            <strong>💡 Recomendación para celulares:</strong> Para una mejor experiencia, activa el "Sitio de escritorio" en tu navegador.<br>
-            <small>• <b>Android (Chrome):</b> Toca los 3 puntos (⋮) arriba a la derecha y elige "Sitio para computadoras".</small><br>
-            <small>• <b>iOS (Safari):</b> Toca "aA" en la barra de direcciones y elige "Sitio web para computadoras".</small>
+    <!-- Mobile Desktop Mode Warning Popup -->
+    <div id="mobile-warning-banner" class="overlay mobile-warning-overlay">
+        <div class="upload-card">
+            <h2 style="color: var(--accent); margin-bottom: 1rem; border-bottom: none;">💡 Recomendación</h2>
+            <div class="warning-content" style="text-align: left; margin-bottom: 1.5rem; line-height: 1.5;">
+                <p style="margin-bottom: 1rem; color: var(--text-main);">Para una mejor experiencia, activa el <strong>"Sitio de escritorio"</strong> en tu navegador.</p>
+                <small style="color: var(--text-muted); display: block; margin-bottom: 0.5rem;">• <b>Android (Chrome):</b> Toca los 3 puntos (⋮) arriba a la derecha y elige "Sitio para computadoras".</small>
+                <small style="color: var(--text-muted); display: block;">• <b>iOS (Safari):</b> Toca "aA" en la barra de direcciones y elige "Sitio web para computadoras".</small>
+            </div>
+            <button id="close-warning-btn" class="action-btn primary" style="width: 100%; font-size: 1rem; padding: 0.8rem;">Entendido</button>
         </div>
-        <button id="close-warning-btn" class="close-warning">×</button>
     </div>
 
     <!-- Drag & Drop Overlay for File if fetch fails -->
@@ -46,7 +49,11 @@
                 <div id="version-badge" class="badge" style="display: none;"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <div class="header-info">Presupuestador de Componentes</div>
+                <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" title="Aplica el porcentaje de rentabilidad al catálogo y oculta los costos base">
+                    <input type="checkbox" id="client-view-toggle" />
+                    👁️ Vista Cliente
+                </label>
+                <div class="header-info" style="border-left: 1px solid var(--border); padding-left: 1rem;">Presupuestador de Componentes</div>
                 <button id="change-list-btn" class="action-btn outline" style="margin-bottom: 0; padding: 0.5rem 1rem; width: auto; font-size: 0.85rem;">Cambiar Lista</button>
             </div>
         </header>

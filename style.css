@@ -505,40 +505,15 @@ tbody tr:hover {
     display: none;
 }
 
-.mobile-warning {
+.mobile-warning-overlay {
     display: none;
+    z-index: 2000;
 }
 
 /* RESPONSIVE DESIGN (MOBILE) */
 @media (max-width: 900px) {
-    .mobile-warning {
+    .mobile-warning-overlay {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        background: rgba(30, 144, 255, 0.15);
-        border-bottom: 1px solid rgba(30, 144, 255, 0.5);
-        color: var(--text-main);
-        padding: 1rem;
-        font-size: 0.9rem;
-    }
-    
-    .warning-content {
-        flex: 1;
-    }
-    
-    .warning-content small {
-        color: var(--text-muted);
-        display: block;
-        margin-top: 0.3rem;
-    }
-    
-    .close-warning {
-        background: transparent;
-        border: none;
-        color: var(--text-muted);
-        font-size: 1.5rem;
-        cursor: pointer;
-        padding: 0 0 0 1rem;
     }
 
     .grid-layout {

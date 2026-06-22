@@ -27,17 +27,21 @@ const versionBadge = document.getElementById('version-badge');
 const changeListBtn = document.getElementById('change-list-btn');
 const mobileWarningBanner = document.getElementById('mobile-warning-banner');
 const closeWarningBtn = document.getElementById('close-warning-btn');
+const clientViewToggle = document.getElementById('client-view-toggle');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+    loadState();
     attemptAutoLoad();
 
     fileInput.addEventListener('change', handleFileUpload);
     searchInput.addEventListener('input', applyFilters);
     categoryFilter.addEventListener('change', applyFilters);
     sortFilter.addEventListener('change', applyFilters);
-    markupInput.addEventListener('input', renderCart);
-    customTotalInput.addEventListener('input', calculateDiscount);
+    markupInput.addEventListener('input', () => { saveState(); renderCart(); renderProducts(); });
+    customTotalInput.addEventListener('input', () => { saveState(); calculateDiscount(); });
+    clientNameInput.addEventListener('input', saveState);
+    if (clientViewToggle) clientViewToggle.addEventListener('change', () => { saveState(); renderProducts(); });
     clearCartBtn.addEventListener('click', clearCart);
     exportBtn.addEventListener('click', exportCart);
     copyBtn.addEventListener('click', copyCart);
@@ -51,6 +55,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// LocalStorage Persistence
+function saveState() {
+    const state = {
+        cart: cart,
+        markup: markupInput.value,
+        customTotal: customTotalInput.value,
+        clientName: clientNameInput.value,
+        clientView: clientViewToggle ? clientViewToggle.checked : false
+    };
+    localStorage.setItem('decsatech_state', JSON.stringify(state));
+}
+
+function loadState() {
+    const saved = localStorage.getItem('decsatech_state');
+    if (saved) {
+        try {
+            const state = JSON.parse(saved);
+            if (state.cart) cart = state.cart;
+            if (state.markup !== undefined) markupInput.value = state.markup;
+            if (state.customTotal !== undefined) customTotalInput.value = state.customTotal;
+            if (state.clientName !== undefined) clientNameInput.value = state.clientName;
+            if (state.clientView !== undefined && clientViewToggle) clientViewToggle.checked = state.clientView;
+            renderCart();
+        } catch (e) {
+            console.error("Error loading state", e);
+        }
+    }
+}
 
 // Try to auto-load the file if served via HTTP
 async function attemptAutoLoad() {
@@ -223,7 +256,11 @@ function renderProducts() {
         catTd.textContent = p.category;
         
         const priceTd = document.createElement('td');
-        priceTd.textContent = formatMoney(p.price);
+        const isClientView = clientViewToggle && clientViewToggle.checked;
+        const markupVal = parseFloat(markupInput.value) || 0;
+        const markupMultiplier = 1 + (markupVal / 100);
+        const displayPrice = isClientView ? p.price * markupMultiplier : p.price;
+        priceTd.textContent = formatMoney(displayPrice);
         
         const actionTd = document.createElement('td');
         const addBtn = document.createElement('button');
@@ -251,15 +288,35 @@ function renderProducts() {
 
 // Add Item to Cart
 function addToCart(product) {
-    // Generate a unique instance ID so identical items can be removed individually
-    const cartItem = { ...product, cartId: Date.now() + Math.random() };
-    cart.push(cartItem);
+    const existing = cart.find(item => item.id === product.id);
+    if (existing) {
+        existing.quantity = (existing.quantity || 1) + 1;
+    } else {
+        const cartItem = { ...product, cartId: Date.now() + Math.random(), quantity: 1 };
+        cart.push(cartItem);
+    }
+    saveState();
     renderCart();
+}
+
+// Adjust Quantity
+function updateQuantity(cartId, delta) {
+    const item = cart.find(i => i.cartId === cartId);
+    if (item) {
+        item.quantity = (item.quantity || 1) + delta;
+        if (item.quantity <= 0) {
+            removeFromCart(cartId);
+        } else {
+            saveState();
+            renderCart();
+        }
+    }
 }
 
 // Remove Item from Cart
 function removeFromCart(cartId) {
     cart = cart.filter(item => item.cartId !== cartId);
+    saveState();
     renderCart();
 }
 
@@ -269,7 +326,9 @@ function clearCart() {
     clientNameInput.value = '';
     customTotalInput.value = '';
     markupInput.value = '0';
+    saveState();
     renderCart();
+    renderProducts(); // Refresh client view price if markup is reset
 }
 
 // Export Cart to Text
@@ -291,10 +350,12 @@ function exportCart() {
     const markupMultiplier = 1 + (markupVal / 100);
 
     cart.forEach(item => {
+        const qty = item.quantity || 1;
         const itemPrice = item.price * markupMultiplier;
-        text += `- ${item.description}\n`;
-        text += `  SKU: ${item.sku} | Precio: ${formatMoney(itemPrice)}\n\n`;
-        total += itemPrice;
+        const rowTotal = itemPrice * qty;
+        text += `- ${qty}x ${item.description}\n`;
+        text += `  SKU: ${item.sku} | Precio U.: ${formatMoney(itemPrice)} | Subtotal: ${formatMoney(rowTotal)}\n\n`;
+        total += rowTotal;
     });
 
     text += "========================================\n";
@@ -341,10 +402,12 @@ function copyCart() {
     const markupMultiplier = 1 + (markupVal / 100);
 
     cart.forEach(item => {
+        const qty = item.quantity || 1;
         const itemPrice = item.price * markupMultiplier;
-        text += `- ${item.description}\n`;
-        text += `  SKU: ${item.sku} | Precio: ${formatMoney(itemPrice)}\n\n`;
-        total += itemPrice;
+        const rowTotal = itemPrice * qty;
+        text += `- ${qty}x ${item.description}\n`;
+        text += `  SKU: ${item.sku} | Precio U.: ${formatMoney(itemPrice)} | Subtotal: ${formatMoney(rowTotal)}\n\n`;
+        total += rowTotal;
     });
 
     text += "========================================\n";
@@ -385,8 +448,10 @@ function renderCart() {
     const markupMultiplier = 1 + (markupVal / 100);
 
     cart.forEach(item => {
+        const qty = item.quantity || 1;
         const itemPrice = item.price * markupMultiplier;
-        total += itemPrice;
+        const rowTotal = itemPrice * qty;
+        total += rowTotal;
 
         const div = document.createElement('div');
         div.className = 'cart-item';
@@ -406,10 +471,47 @@ function renderCart() {
         const rightDiv = document.createElement('div');
         rightDiv.style.display = 'flex';
         rightDiv.style.alignItems = 'center';
+        rightDiv.style.gap = '10px';
+
+        const qtyControls = document.createElement('div');
+        qtyControls.style.display = 'flex';
+        qtyControls.style.alignItems = 'center';
+        qtyControls.style.gap = '5px';
+        qtyControls.style.background = 'rgba(0,0,0,0.2)';
+        qtyControls.style.borderRadius = '4px';
+        qtyControls.style.padding = '2px 5px';
+
+        const minusBtn = document.createElement('button');
+        minusBtn.textContent = '-';
+        minusBtn.style.background = 'none';
+        minusBtn.style.border = 'none';
+        minusBtn.style.color = 'var(--text-main)';
+        minusBtn.style.cursor = 'pointer';
+        minusBtn.style.fontSize = '1.1rem';
+        minusBtn.onclick = () => updateQuantity(item.cartId, -1);
+
+        const qtySpan = document.createElement('span');
+        qtySpan.textContent = qty;
+        qtySpan.style.fontSize = '0.9rem';
+        qtySpan.style.minWidth = '20px';
+        qtySpan.style.textAlign = 'center';
+
+        const plusBtn = document.createElement('button');
+        plusBtn.textContent = '+';
+        plusBtn.style.background = 'none';
+        plusBtn.style.border = 'none';
+        plusBtn.style.color = 'var(--text-main)';
+        plusBtn.style.cursor = 'pointer';
+        plusBtn.style.fontSize = '1.1rem';
+        plusBtn.onclick = () => updateQuantity(item.cartId, 1);
+
+        qtyControls.appendChild(minusBtn);
+        qtyControls.appendChild(qtySpan);
+        qtyControls.appendChild(plusBtn);
 
         const priceSpan = document.createElement('span');
         priceSpan.className = 'cart-item-price';
-        priceSpan.textContent = formatMoney(itemPrice);
+        priceSpan.textContent = formatMoney(rowTotal);
 
         const rmBtn = document.createElement('button');
         rmBtn.className = 'remove-btn';
@@ -417,6 +519,7 @@ function renderCart() {
         rmBtn.title = 'Eliminar componente';
         rmBtn.onclick = () => removeFromCart(item.cartId);
 
+        rightDiv.appendChild(qtyControls);
         rightDiv.appendChild(priceSpan);
         rightDiv.appendChild(rmBtn);
 
