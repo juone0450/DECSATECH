@@ -513,7 +513,7 @@ tbody tr:hover {
 /* RESPONSIVE DESIGN (MOBILE) */
 @media (max-width: 900px) {
     .mobile-warning-overlay {
-        display: flex;
+        display: flex !important;
     }
 
     .grid-layout {

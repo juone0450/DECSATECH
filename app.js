@@ -32,7 +32,7 @@ const clientViewToggle = document.getElementById('client-view-toggle');
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadState();
-    attemptAutoLoad();
+    // attemptAutoLoad(); // Deshabilitado para que el usuario siempre vea la pantalla de inicio
 
     fileInput.addEventListener('change', handleFileUpload);
     searchInput.addEventListener('input', applyFilters);
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (closeWarningBtn && mobileWarningBanner) {
         closeWarningBtn.addEventListener('click', () => {
-            mobileWarningBanner.style.display = 'none';
+            mobileWarningBanner.style.setProperty('display', 'none', 'important');
         });
     }
 });
