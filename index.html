@@ -7,11 +7,14 @@
     <meta name="description" content="Dashboard para crear presupuestos de PC sumando componentes de la lista de precios Decsatech.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
     <!-- Mobile Desktop Mode Warning Popup -->
     <div id="mobile-warning-banner" class="overlay mobile-warning-overlay">
         <div class="upload-card">
@@ -27,7 +30,8 @@
 
     <!-- Drag & Drop Overlay for File if fetch fails -->
     <div id="upload-overlay" class="overlay">
-        <div class="upload-card">
+        <div class="upload-card" style="position: relative;">
+            <button id="close-upload-btn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 2rem; color: var(--text-muted); cursor: pointer; line-height: 1; display: none;" title="Cerrar">&times;</button>
             <h1 id="upload-title">Bienvenido a Decsatech</h1>
             <p>Por favor, carga el archivo <strong>Lista_de_Precios_Decsatech.xlsx</strong> o usa la versión online para comenzar.</p>
             <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
@@ -49,9 +53,26 @@
                 <div id="version-badge" class="badge" style="display: none;"></div>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="dollar-widget" title="Cotización del dólar utilizada para la conversión">
+                    <span>💵 Dólar:</span>
+                    <input type="number" id="dollar-rate-input" value="1" min="1" step="0.5" />
+                </div>
+                <div class="currency-toggle" id="currency-toggle-container">
+                    <span id="currency-ars" class="active">ARS</span>
+                    <span id="currency-usd">USD</span>
+                </div>
                 <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" title="Aplica el porcentaje de rentabilidad al catálogo y oculta los costos base">
                     <input type="checkbox" id="client-view-toggle" />
                     👁️ Vista Cliente
+                </label>
+                <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.5rem;"></div>
+                <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" title="Cambiar a Modo Claro">
+                    <input type="checkbox" id="light-mode-toggle" />
+                    ☀️ Modo Claro
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" title="Estilo Minimalista de Google">
+                    <input type="checkbox" id="google-theme-toggle" />
+                    ✨ Estilo Google
                 </label>
                 <div class="header-info" style="border-left: 1px solid var(--border); padding-left: 1rem;">Presupuestador de Componentes</div>
                 <button id="change-list-btn" class="action-btn outline" style="margin-bottom: 0; padding: 0.5rem 1rem; width: auto; font-size: 0.85rem;">Cambiar Lista</button>
@@ -82,7 +103,7 @@
                             <tr>
                                 <th>Descripción</th>
                                 <th>Categoría</th>
-                                <th>Precio (ARS)</th>
+                                <th>Precio (<span id="price-currency-label">ARS</span>)</th>
                                 <th>Acción</th>
                             </tr>
                         </thead>
@@ -128,12 +149,26 @@
                         </div>
                     </div>
 
+                    <button id="save-budget-btn" class="action-btn primary" style="background: var(--text-main); color: var(--bg-main);">Guardar Presupuesto</button>
+                    <button id="load-budget-btn" class="action-btn outline" style="border-color: var(--text-main); color: var(--text-main);">Mis Presupuestos</button>
                     <button id="clear-cart-btn" class="action-btn outline">Limpiar Todo</button>
                     <button id="export-btn" class="action-btn primary">Exportar Presupuesto</button>
+                    <button id="pdf-btn" class="action-btn primary" style="background: #e74c3c; color: white;">Exportar a PDF</button>
                     <button id="copy-btn" class="action-btn primary">Copiar Presupuesto</button>
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Saved Budgets Overlay -->
+    <div id="saved-budgets-overlay" class="overlay" style="display: none;">
+        <div class="upload-card saved-budgets-card" style="position: relative; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+            <button id="close-saved-budgets-btn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 2rem; color: var(--text-muted); cursor: pointer; line-height: 1;" title="Cerrar">&times;</button>
+            <h2 style="margin-bottom: 1.5rem; text-align: left; color: var(--text-main);">Mis Presupuestos Guardados</h2>
+            <div id="saved-budgets-list" class="saved-budgets-list" style="overflow-y: auto; flex: 1; text-align: left; padding-right: 10px;">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>

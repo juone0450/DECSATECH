@@ -21,6 +21,7 @@ const discountInfo = document.getElementById('discount-info');
 const discountVal = document.getElementById('discount-val');
 const clearCartBtn = document.getElementById('clear-cart-btn');
 const exportBtn = document.getElementById('export-btn');
+const pdfBtn = document.getElementById('pdf-btn');
 const copyBtn = document.getElementById('copy-btn');
 const fetchOnlineBtn = document.getElementById('fetch-online-btn');
 const versionBadge = document.getElementById('version-badge');
@@ -28,6 +29,22 @@ const changeListBtn = document.getElementById('change-list-btn');
 const mobileWarningBanner = document.getElementById('mobile-warning-banner');
 const closeWarningBtn = document.getElementById('close-warning-btn');
 const clientViewToggle = document.getElementById('client-view-toggle');
+const lightModeToggle = document.getElementById('light-mode-toggle');
+const googleThemeToggle = document.getElementById('google-theme-toggle');
+const closeUploadBtn = document.getElementById('close-upload-btn');
+const toastContainer = document.getElementById('toast-container');
+const saveBudgetBtn = document.getElementById('save-budget-btn');
+const loadBudgetBtn = document.getElementById('load-budget-btn');
+const savedBudgetsOverlay = document.getElementById('saved-budgets-overlay');
+const closeSavedBudgetsBtn = document.getElementById('close-saved-budgets-btn');
+const savedBudgetsList = document.getElementById('saved-budgets-list');
+
+let currentCurrency = 'ARS';
+let dollarRate = 1;
+const dollarRateInput = document.getElementById('dollar-rate-input');
+const currencyArsBtn = document.getElementById('currency-ars');
+const currencyUsdBtn = document.getElementById('currency-usd');
+const priceCurrencyLabel = document.getElementById('price-currency-label');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -42,12 +59,54 @@ document.addEventListener('DOMContentLoaded', () => {
     customTotalInput.addEventListener('input', () => { saveState(); calculateDiscount(); });
     clientNameInput.addEventListener('input', saveState);
     if (clientViewToggle) clientViewToggle.addEventListener('change', () => { saveState(); renderProducts(); });
+    if (lightModeToggle) lightModeToggle.addEventListener('change', () => { 
+        document.body.classList.toggle('light-mode', lightModeToggle.checked);
+        saveState(); 
+    });
+    if (googleThemeToggle) googleThemeToggle.addEventListener('change', () => { 
+        document.body.classList.toggle('google-theme', googleThemeToggle.checked);
+        saveState(); 
+    });
     clearCartBtn.addEventListener('click', clearCart);
     exportBtn.addEventListener('click', exportCart);
+    if (pdfBtn) pdfBtn.addEventListener('click', exportPDF);
     copyBtn.addEventListener('click', copyCart);
     if (fetchOnlineBtn) fetchOnlineBtn.addEventListener('click', loadOnlineExcel);
+    
+    if (saveBudgetBtn) saveBudgetBtn.addEventListener('click', saveCurrentBudget);
+    if (loadBudgetBtn) loadBudgetBtn.addEventListener('click', showSavedBudgets);
+    if (closeSavedBudgetsBtn) closeSavedBudgetsBtn.addEventListener('click', () => {
+        savedBudgetsOverlay.style.display = 'none';
+    });
+
+    if (dollarRateInput) {
+        dollarRateInput.addEventListener('input', () => {
+            const val = parseFloat(dollarRateInput.value);
+            if (!isNaN(val) && val > 0) {
+                dollarRate = val;
+                renderProducts();
+                renderCart();
+            }
+        });
+    }
+    
+    if (currencyArsBtn && currencyUsdBtn) {
+        currencyArsBtn.addEventListener('click', () => setCurrency('ARS'));
+        currencyUsdBtn.addEventListener('click', () => setCurrency('USD'));
+    }
+
+    fetchDollarRate();
+
+    if (closeUploadBtn) {
+        closeUploadBtn.addEventListener('click', () => {
+            uploadOverlay.style.display = 'none';
+        });
+    }
     if (changeListBtn) changeListBtn.addEventListener('click', () => {
         uploadOverlay.style.display = 'flex';
+        if (closeUploadBtn) {
+            closeUploadBtn.style.display = products.length > 0 ? 'block' : 'none';
+        }
     });
     if (closeWarningBtn && mobileWarningBanner) {
         closeWarningBtn.addEventListener('click', () => {
@@ -63,7 +122,9 @@ function saveState() {
         markup: markupInput.value,
         customTotal: customTotalInput.value,
         clientName: clientNameInput.value,
-        clientView: clientViewToggle ? clientViewToggle.checked : false
+        clientView: clientViewToggle ? clientViewToggle.checked : false,
+        lightMode: lightModeToggle ? lightModeToggle.checked : false,
+        googleTheme: googleThemeToggle ? googleThemeToggle.checked : false
     };
     localStorage.setItem('decsatech_state', JSON.stringify(state));
 }
@@ -78,6 +139,14 @@ function loadState() {
             if (state.customTotal !== undefined) customTotalInput.value = state.customTotal;
             if (state.clientName !== undefined) clientNameInput.value = state.clientName;
             if (state.clientView !== undefined && clientViewToggle) clientViewToggle.checked = state.clientView;
+            if (state.lightMode !== undefined && lightModeToggle) {
+                lightModeToggle.checked = state.lightMode;
+                document.body.classList.toggle('light-mode', state.lightMode);
+            }
+            if (state.googleTheme !== undefined && googleThemeToggle) {
+                googleThemeToggle.checked = state.googleTheme;
+                document.body.classList.toggle('google-theme', state.googleTheme);
+            }
             renderCart();
         } catch (e) {
             console.error("Error loading state", e);
@@ -112,7 +181,7 @@ async function loadOnlineExcel() {
         processExcel(arrayBuffer, "Online (GitHub)", "badge-online");
     } catch (e) {
         console.error(e);
-        alert("Hubo un error al cargar la lista desde GitHub. Verifica tu conexión.");
+        showToast("Hubo un error al cargar la lista desde GitHub. Verifica tu conexión.", "error");
         fetchOnlineBtn.textContent = originalText;
         fetchOnlineBtn.disabled = false;
     }
@@ -186,7 +255,7 @@ function processExcel(buffer, sourceName = "Local", sourceClass = "badge-local")
         
         renderProducts();
     } catch (error) {
-        alert("Error al leer el archivo Excel. Asegúrate de que sea el formato correcto.");
+        showToast("Error al leer el archivo Excel. Asegúrate de que sea el formato correcto.", "error");
         console.error(error);
     }
 }
@@ -231,6 +300,14 @@ function applyFilters() {
 
 // Format Currency
 function formatMoney(amount) {
+    if (currentCurrency === 'USD') {
+        const usdAmount = amount / dollarRate;
+        const formatted = new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(usdAmount);
+        return 'USD ' + formatted;
+    }
     return new Intl.NumberFormat('es-AR', {
         style: 'currency',
         currency: 'ARS',
@@ -291,12 +368,15 @@ function addToCart(product) {
     const existing = cart.find(item => item.id === product.id);
     if (existing) {
         existing.quantity = (existing.quantity || 1) + 1;
+        saveState();
+        renderCart();
     } else {
         const cartItem = { ...product, cartId: Date.now() + Math.random(), quantity: 1 };
         cart.push(cartItem);
+        saveState();
+        renderCart();
+        fetchProductImage(cartItem);
     }
-    saveState();
-    renderCart();
 }
 
 // Adjust Quantity
@@ -331,10 +411,197 @@ function clearCart() {
     renderProducts(); // Refresh client view price if markup is reset
 }
 
-// Export Cart to Text
+// Export Cart to PDF / Print
+function exportPDF() {
+    if (cart.length === 0) {
+        showToast("El presupuesto está vacío.", "warning");
+        return;
+    }
+
+    const clientName = clientNameInput.value.trim();
+    const dateStr = new Date().toLocaleDateString();
+
+    const formatARS = (amount) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+    const formatUSD = (amount) => 'USD ' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount / dollarRate);
+
+    let html = `
+    <html>
+    <head>
+        <title>Presupuesto_Decsatech_${clientName || 'Cliente'}_${dateStr}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Outfit', sans-serif;
+                color: #202124;
+                margin: 0;
+                padding: 40px;
+                background: #fff;
+            }
+            .header {
+                border-bottom: 2px solid #0b57d0;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+            }
+            h1 { margin: 0; color: #1f1f1f; font-size: 28px; font-weight: 800; }
+            h1 span { color: #0b57d0; }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 30px;
+                font-size: 13px;
+            }
+            th { padding: 12px; text-align: left; border-bottom: 2px solid #dadce0; color: #444746; font-weight: 600; }
+            td { padding: 12px; border-bottom: 1px solid #f1f3f4; color: #1f1f1f; }
+            .right { text-align: right; }
+            .total-box {
+                width: 320px;
+                background: #f8fafd;
+                padding: 20px;
+                border-radius: 12px;
+                float: right;
+                border: 1px solid #e1e3e1;
+            }
+            .flex-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+            .usd-text { font-size: 10px; color: #9aa0a6; font-weight: 400; }
+            
+            @media print {
+                @page { margin: 15mm; size: A4; }
+                body { padding: 0; }
+                .total-box { border: 1px solid #dadce0; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div>
+                <h1>DECSATECH <span>PRO</span></h1>
+                <p style="margin: 5px 0 0 0; color: #5f6368; font-size: 14px;">Presupuesto de Componentes</p>
+            </div>
+            <div class="right">
+                <p style="margin: 0; color: #444746; font-size: 14px;"><strong>Fecha:</strong> ${dateStr}</p>
+                ${clientName ? `<p style="margin: 5px 0 0 0; color: #444746; font-size: 14px;"><strong>Cliente:</strong> ${clientName}</p>` : ''}
+                <p style="margin: 5px 0 0 0; color: #5f6368; font-size: 12px;"><strong>Cotización Dólar:</strong> $${dollarRate}</p>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr style="background: #f8fafd;">
+                    <th style="width: 5%;">Cant.</th>
+                    <th style="width: 43%;">Descripción del Producto</th>
+                    <th class="right" style="width: 13%;">P.U. (ARS)</th>
+                    <th class="right" style="width: 13%;">P.U. (USD)</th>
+                    <th class="right" style="width: 13%;">Subtotal (ARS)</th>
+                    <th class="right" style="width: 13%;">Subtotal (USD)</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    let total = 0;
+    const markupVal = parseFloat(markupInput.value) || 0;
+    const markupMultiplier = 1 + (markupVal / 100);
+
+    cart.forEach(item => {
+        const qty = item.quantity || 1;
+        const itemPrice = item.price * markupMultiplier;
+        const rowTotal = itemPrice * qty;
+        total += rowTotal;
+
+        html += `
+            <tr>
+                <td>${qty}</td>
+                <td>
+                    <div style="font-weight: 600;">${item.description}</div>
+                    <div class="usd-text">SKU: ${item.sku}</div>
+                </td>
+                <td class="right" style="font-weight: 600;">${formatARS(itemPrice)}</td>
+                <td class="right" style="color: #0b57d0; font-weight: 600;">${formatUSD(itemPrice)}</td>
+                <td class="right" style="font-weight: 600;">${formatARS(rowTotal)}</td>
+                <td class="right" style="color: #0b57d0; font-weight: 600;">${formatUSD(rowTotal)}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+        
+        <div style="display: flow-root;">
+            <div class="total-box">
+                <div class="flex-row" style="font-size: 14px;">
+                    <span style="color: #444746;">Subtotal:</span>
+                    <span style="font-weight: 600;" class="right">${formatARS(total)} <br><span class="usd-text">${formatUSD(total)}</span></span>
+                </div>
+    `;
+
+    const customValInput = parseFloat(customTotalInput.value);
+    const customValARS = currentCurrency === 'USD' ? customValInput * dollarRate : customValInput;
+    let finalTotal = total;
+    
+    if (!isNaN(customValInput) && customValInput > 0 && total > 0) {
+        finalTotal = customValARS;
+        const discountAmount = total - customValARS;
+        
+        if (discountAmount > 0) {
+            html += `
+                <div class="flex-row" style="color: #146c2e; font-size: 14px;">
+                    <span>Descuento:</span>
+                    <span>-${formatARS(discountAmount)}</span>
+                </div>
+            `;
+        } else if (discountAmount < 0) {
+            html += `
+                <div class="flex-row" style="color: #b3261e; font-size: 14px;">
+                    <span>Recargo:</span>
+                    <span>+${formatARS(Math.abs(discountAmount))}</span>
+                </div>
+            `;
+        }
+    }
+
+    html += `
+                <div class="flex-row" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #dadce0; align-items: flex-end;">
+                    <span style="font-size: 18px; font-weight: 800; color: #1f1f1f;">TOTAL:</span>
+                    <div class="right">
+                        <span style="font-size: 18px; font-weight: 800; color: #0b57d0;">${formatARS(finalTotal)}</span>
+                        <div style="font-size: 11px; font-weight: 400; color: #9aa0a6; margin-top: 2px;">${formatUSD(finalTotal)}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 60px; text-align: center; color: #5f6368; font-size: 12px; border-top: 1px solid #e1e3e1; padding-top: 20px;">
+            Los precios pueden estar sujetos a modificaciones. Presupuesto generado por DECSATECH PRO.
+        </div>
+    </body>
+    </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showToast("Por favor habilita las ventanas emergentes (popups) para imprimir el PDF.", "error");
+        return;
+    }
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+    // Give time for fonts to load before triggering print dialog
+    setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+        // Optional: close the window automatically after print dialog is closed
+        // printWindow.close(); 
+    }, 500);
+}
+
 function exportCart() {
     if (cart.length === 0) {
-        alert("El presupuesto está vacío.");
+        showToast("El presupuesto está vacío.", "warning");
         return;
     }
 
@@ -361,11 +628,12 @@ function exportCart() {
     text += "========================================\n";
     text += `TOTAL: ${formatMoney(total)}\n`;
     
-    const customVal = parseFloat(customTotalInput.value);
-    if (!isNaN(customVal) && customVal > 0 && total > 0) {
-        const discountAmount = total - customVal;
+    const customValInput = parseFloat(customTotalInput.value);
+    const customValARS = currentCurrency === 'USD' ? customValInput * dollarRate : customValInput;
+    if (!isNaN(customValInput) && customValInput > 0 && total > 0) {
+        const discountAmount = total - customValARS;
         const discountPercent = (discountAmount / total) * 100;
-        text += `TOTAL ACORDADO: ${formatMoney(customVal)}\n`;
+        text += `TOTAL ACORDADO: ${formatMoney(customValARS)}\n`;
         if (discountAmount > 0) {
             text += `DESCUENTO APLICADO: ${formatMoney(discountAmount)} (${discountPercent.toFixed(1)}%)\n`;
         } else if (discountAmount < 0) {
@@ -386,7 +654,7 @@ function exportCart() {
 // Copy Cart to Clipboard
 function copyCart() {
     if (cart.length === 0) {
-        alert("El presupuesto está vacío.");
+        showToast("El presupuesto está vacío.", "warning");
         return;
     }
 
@@ -413,11 +681,12 @@ function copyCart() {
     text += "========================================\n";
     text += `TOTAL: ${formatMoney(total)}\n`;
     
-    const customVal = parseFloat(customTotalInput.value);
-    if (!isNaN(customVal) && customVal > 0 && total > 0) {
-        const discountAmount = total - customVal;
+    const customValInput = parseFloat(customTotalInput.value);
+    const customValARS = currentCurrency === 'USD' ? customValInput * dollarRate : customValInput;
+    if (!isNaN(customValInput) && customValInput > 0 && total > 0) {
+        const discountAmount = total - customValARS;
         const discountPercent = (discountAmount / total) * 100;
-        text += `TOTAL ACORDADO: ${formatMoney(customVal)}\n`;
+        text += `TOTAL ACORDADO: ${formatMoney(customValARS)}\n`;
         if (discountAmount > 0) {
             text += `DESCUENTO APLICADO: ${formatMoney(discountAmount)} (${discountPercent.toFixed(1)}%)\n`;
         } else if (discountAmount < 0) {
@@ -426,10 +695,10 @@ function copyCart() {
     }
 
     navigator.clipboard.writeText(text).then(() => {
-        alert("¡Presupuesto copiado al portapapeles!");
+        showToast("¡Presupuesto copiado al portapapeles!", "success");
     }).catch(err => {
         console.error("Error al copiar: ", err);
-        alert("Error al copiar el presupuesto. Es posible que el navegador no lo permita sin HTTPS.");
+        showToast("Error al copiar el presupuesto. Es posible que el navegador no lo permita sin HTTPS.", "error");
     });
 }
 
@@ -456,6 +725,13 @@ function renderCart() {
         const div = document.createElement('div');
         div.className = 'cart-item';
         
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'cart-item-left';
+
+        const img = document.createElement('img');
+        img.className = 'cart-item-image' + (item.imageUrl && item.imageUrl !== 'placeholder' ? '' : ' loading');
+        img.src = item.imageUrl && item.imageUrl !== 'placeholder' ? item.imageUrl : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
+
         const infoDiv = document.createElement('div');
         infoDiv.className = 'cart-item-info';
         
@@ -467,6 +743,9 @@ function renderCart() {
         
         infoDiv.appendChild(title);
         infoDiv.appendChild(desc);
+
+        leftDiv.appendChild(img);
+        leftDiv.appendChild(infoDiv);
 
         const rightDiv = document.createElement('div');
         rightDiv.style.display = 'flex';
@@ -523,7 +802,7 @@ function renderCart() {
         rightDiv.appendChild(priceSpan);
         rightDiv.appendChild(rmBtn);
 
-        div.appendChild(infoDiv);
+        div.appendChild(leftDiv);
         div.appendChild(rightDiv);
         
         cartItemsContainer.appendChild(div);
@@ -541,14 +820,15 @@ function updateTotals(total) {
 }
 
 function calculateDiscount() {
-    const customVal = parseFloat(customTotalInput.value);
+    const customValInput = parseFloat(customTotalInput.value);
+    const customValARS = currentCurrency === 'USD' ? customValInput * dollarRate : customValInput;
     
-    if (isNaN(customVal) || customVal <= 0 || currentTotal <= 0) {
+    if (isNaN(customValInput) || customValInput <= 0 || currentTotal <= 0) {
         discountInfo.style.display = 'none';
         return;
     }
 
-    const discountAmount = currentTotal - customVal;
+    const discountAmount = currentTotal - customValARS;
     const discountPercent = (discountAmount / currentTotal) * 100;
     
     discountInfo.style.display = 'flex';
@@ -563,4 +843,260 @@ function calculateDiscount() {
         discountVal.textContent = `$0.00 (0%)`;
         discountVal.className = '';
     }
+}
+
+// TOAST NOTIFICATIONS
+function showToast(message, type = 'success') {
+    if (!toastContainer) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    
+    toast.onclick = () => {
+        toast.style.animation = 'toastOut 0.3s ease-in forwards';
+        setTimeout(() => toast.remove(), 300);
+    };
+
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'toastOut 0.3s ease-in forwards';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 4000);
+}
+
+// SAVED BUDGETS
+function getSavedBudgets() {
+    const saved = localStorage.getItem('decsatech_saved_budgets');
+    return saved ? JSON.parse(saved) : [];
+}
+
+function saveCurrentBudget() {
+    if (cart.length === 0) {
+        showToast("No puedes guardar un presupuesto vacío.", "warning");
+        return;
+    }
+
+    let name = clientNameInput.value.trim();
+    if (!name) {
+        name = prompt("Ingresa un nombre para guardar este presupuesto:");
+        if (!name) return; // Cancelled
+        clientNameInput.value = name;
+        saveState(); // Update current state client name
+    }
+
+    const budgets = getSavedBudgets();
+    
+    // Check if we already have one with this name
+    const existingIndex = budgets.findIndex(b => b.name.toLowerCase() === name.toLowerCase());
+    
+    const budgetData = {
+        id: Date.now().toString(),
+        name: name,
+        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        total: currentTotal,
+        state: {
+            cart: cart,
+            markup: markupInput.value,
+            customTotal: customTotalInput.value,
+            clientName: clientNameInput.value,
+            clientView: clientViewToggle ? clientViewToggle.checked : false
+        }
+    };
+
+    if (existingIndex >= 0) {
+        if (confirm(`Ya existe un presupuesto llamado "${name}". ¿Deseas sobreescribirlo?`)) {
+            budgets[existingIndex] = budgetData;
+        } else {
+            return;
+        }
+    } else {
+        budgets.push(budgetData);
+    }
+
+    localStorage.setItem('decsatech_saved_budgets', JSON.stringify(budgets));
+    showToast(`Presupuesto "${name}" guardado exitosamente.`, "success");
+}
+
+function showSavedBudgets() {
+    savedBudgetsList.innerHTML = '';
+    const budgets = getSavedBudgets();
+
+    if (budgets.length === 0) {
+        savedBudgetsList.innerHTML = '<p style="color: var(--text-muted);">No tienes presupuestos guardados.</p>';
+    } else {
+        // Sort descending by id (timestamp)
+        budgets.sort((a, b) => b.id - a.id).forEach(b => {
+            const item = document.createElement('div');
+            item.className = 'saved-budget-item';
+            
+            const info = document.createElement('div');
+            info.className = 'saved-budget-info';
+            info.innerHTML = `
+                <h3>${b.name}</h3>
+                <p>Fecha: ${b.date} | Total: ${formatMoney(b.total)}</p>
+            `;
+            
+            const actions = document.createElement('div');
+            actions.className = 'saved-budget-actions';
+            
+            const loadBtn = document.createElement('button');
+            loadBtn.className = 'action-btn primary';
+            loadBtn.style.padding = '0.5rem 1rem';
+            loadBtn.style.marginBottom = '0';
+            loadBtn.textContent = 'Cargar';
+            loadBtn.onclick = () => loadSavedBudget(b);
+            
+            const delBtn = document.createElement('button');
+            delBtn.className = 'action-btn outline';
+            delBtn.style.padding = '0.5rem 1rem';
+            delBtn.style.marginBottom = '0';
+            delBtn.style.color = 'var(--danger)';
+            delBtn.style.borderColor = 'var(--danger)';
+            delBtn.textContent = 'Eliminar';
+            delBtn.onclick = () => deleteSavedBudget(b.id);
+            
+            actions.appendChild(loadBtn);
+            actions.appendChild(delBtn);
+            
+            item.appendChild(info);
+            item.appendChild(actions);
+            savedBudgetsList.appendChild(item);
+        });
+    }
+
+    savedBudgetsOverlay.style.display = 'flex';
+}
+
+function loadSavedBudget(budget) {
+    if (cart.length > 0 && !confirm("Esto reemplazará el presupuesto actual. ¿Estás seguro?")) {
+        return;
+    }
+    
+    let loadedCart = JSON.parse(JSON.stringify(budget.state.cart || []));
+    let priceChanged = false;
+    let oldTotal = 0;
+    let newTotal = 0;
+    
+    loadedCart.forEach(item => {
+        const qty = item.quantity || 1;
+        oldTotal += item.price * qty;
+        
+        const currentProduct = products.find(p => p.sku === item.sku);
+        if (currentProduct) {
+            newTotal += currentProduct.price * qty;
+            if (currentProduct.price !== item.price) {
+                priceChanged = true;
+            }
+        } else {
+            newTotal += item.price * qty; // Product missing, use old price
+        }
+    });
+
+    if (priceChanged) {
+        const msg = `Atención: Hay diferencias de precio en la lista actual.\n\nPrecio Original: ${formatMoney(oldTotal)}\nPrecio Actual: ${formatMoney(newTotal)}\n\n¿Deseas actualizar el presupuesto a los PRECIOS NUEVOS?\n(Pulsa "Cancelar" para mantener los precios viejos de cuando lo guardaste).`;
+        
+        if (confirm(msg)) {
+            loadedCart.forEach(item => {
+                const currentProduct = products.find(p => p.sku === item.sku);
+                if (currentProduct) item.price = currentProduct.price;
+            });
+            showToast("Precios actualizados a la lista de hoy.", "info");
+        } else {
+            showToast("Se cargaron los precios viejos originales.", "info");
+        }
+    } else {
+        showToast(`Presupuesto "${budget.name}" cargado.`, "success");
+    }
+    
+    cart = loadedCart;
+    markupInput.value = budget.state.markup || '0';
+    customTotalInput.value = budget.state.customTotal || '';
+    clientNameInput.value = budget.state.clientName || '';
+    if (clientViewToggle) clientViewToggle.checked = budget.state.clientView || false;
+    
+    saveState();
+    renderCart();
+    renderProducts();
+    
+    savedBudgetsOverlay.style.display = 'none';
+}
+
+function deleteSavedBudget(id) {
+    if (confirm("¿Seguro que deseas eliminar este presupuesto guardado?")) {
+        let budgets = getSavedBudgets();
+        budgets = budgets.filter(b => b.id !== id);
+        localStorage.setItem('decsatech_saved_budgets', JSON.stringify(budgets));
+        showSavedBudgets(); // Refresh list
+        showToast("Presupuesto eliminado.", "info");
+    }
+}
+
+// DOLLAR API & CURRENCY
+async function fetchDollarRate() {
+    try {
+        const res = await fetch('https://dolarapi.com/v1/dolares/blue');
+        if (!res.ok) throw new Error("Network response was not ok");
+        const data = await res.json();
+        if (data && data.venta) {
+            dollarRate = parseFloat(data.venta);
+            if (dollarRateInput) dollarRateInput.value = dollarRate;
+            renderProducts();
+            renderCart();
+            calculateDiscount();
+        }
+    } catch (e) {
+        console.error("No se pudo obtener el dólar", e);
+        showToast("No se pudo actualizar el dólar automáticamente.", "warning");
+    }
+}
+
+function setCurrency(currency) {
+    currentCurrency = currency;
+    if (currency === 'ARS') {
+        currencyArsBtn.classList.add('active');
+        currencyUsdBtn.classList.remove('active');
+        priceCurrencyLabel.textContent = 'ARS';
+    } else {
+        currencyUsdBtn.classList.add('active');
+        currencyArsBtn.classList.remove('active');
+        priceCurrencyLabel.textContent = 'USD';
+    }
+    renderProducts();
+    renderCart();
+    calculateDiscount();
+}
+
+// MERCADOLIBRE IMAGES
+const imageCache = {};
+
+async function fetchProductImage(cartItem) {
+    if (imageCache[cartItem.sku]) {
+        cartItem.imageUrl = imageCache[cartItem.sku];
+        renderCart();
+        saveState();
+        return;
+    }
+    
+    try {
+        const query = encodeURIComponent(cartItem.description.substring(0, 50));
+        const res = await fetch(`https://api.mercadolibre.com/sites/MLA/search?q=${query}&limit=1`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0 && data.results[0].thumbnail) {
+            let imgUrl = data.results[0].thumbnail.replace("http://", "https://");
+            // Improve image quality slightly if possible
+            imgUrl = imgUrl.replace("-I.jpg", "-O.jpg");
+            cartItem.imageUrl = imgUrl;
+            imageCache[cartItem.sku] = imgUrl;
+        } else {
+            cartItem.imageUrl = "placeholder"; // no image found
+        }
+    } catch (e) {
+        console.error("Error fetching image", e);
+        cartItem.imageUrl = "placeholder";
+    }
+    renderCart();
+    saveState();
 }
