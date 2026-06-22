@@ -16,11 +16,15 @@
     <div id="upload-overlay" class="overlay">
         <div class="upload-card">
             <h1 id="upload-title">Bienvenido a Decsatech</h1>
-            <p>Por favor, carga el archivo <strong>Lista_de_Precios_Decsatech.xlsx</strong> para comenzar.</p>
-            <label class="upload-btn">
-                Seleccionar Archivo
-                <input type="file" id="file-input" accept=".xlsx, .xls" />
-            </label>
+            <p>Por favor, carga el archivo <strong>Lista_de_Precios_Decsatech.xlsx</strong> o usa la versión online para comenzar.</p>
+            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                <button id="fetch-online-btn" class="upload-btn" style="width: 100%; max-width: 300px; border: none; font-family: var(--font-family);">Cargar versión Online</button>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">— o selecciona un archivo local —</div>
+                <label class="upload-btn" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); width: 100%; max-width: 300px;">
+                    Seleccionar Archivo
+                    <input type="file" id="file-input" accept=".xlsx, .xls" />
+                </label>
+            </div>
         </div>
     </div>
 

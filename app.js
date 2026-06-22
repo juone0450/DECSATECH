@@ -22,6 +22,7 @@ const discountVal = document.getElementById('discount-val');
 const clearCartBtn = document.getElementById('clear-cart-btn');
 const exportBtn = document.getElementById('export-btn');
 const copyBtn = document.getElementById('copy-btn');
+const fetchOnlineBtn = document.getElementById('fetch-online-btn');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clearCartBtn.addEventListener('click', clearCart);
     exportBtn.addEventListener('click', exportCart);
     copyBtn.addEventListener('click', copyCart);
+    if (fetchOnlineBtn) fetchOnlineBtn.addEventListener('click', loadOnlineExcel);
 });
 
 // Try to auto-load the file if served via HTTP
@@ -48,6 +50,26 @@ async function attemptAutoLoad() {
     } catch (e) {
         console.log("Could not auto-load file. Waiting for manual upload.");
         uploadOverlay.style.display = 'flex';
+    }
+}
+
+// Load online file from GitHub
+async function loadOnlineExcel() {
+    const rawUrl = 'https://raw.githubusercontent.com/juone0450/DECSATECH/main/Lista_de_Precios_Decsatech.xlsx';
+    const originalText = fetchOnlineBtn.textContent;
+    fetchOnlineBtn.textContent = 'Cargando...';
+    fetchOnlineBtn.disabled = true;
+    
+    try {
+        const res = await fetch(rawUrl);
+        if (!res.ok) throw new Error("No se pudo descargar el archivo online");
+        const arrayBuffer = await res.arrayBuffer();
+        processExcel(arrayBuffer);
+    } catch (e) {
+        console.error(e);
+        alert("Hubo un error al cargar la lista desde GitHub. Verifica tu conexión.");
+        fetchOnlineBtn.textContent = originalText;
+        fetchOnlineBtn.disabled = false;
     }
 }
 
