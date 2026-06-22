@@ -12,6 +12,16 @@
     <script src="xlsx.full.min.js"></script>
 </head>
 <body>
+    <!-- Mobile Desktop Mode Warning Banner -->
+    <div id="mobile-warning-banner" class="mobile-warning">
+        <div class="warning-content">
+            <strong>💡 Recomendación para celulares:</strong> Para una mejor experiencia, activa el "Sitio de escritorio" en tu navegador.<br>
+            <small>• <b>Android (Chrome):</b> Toca los 3 puntos (⋮) arriba a la derecha y elige "Sitio para computadoras".</small><br>
+            <small>• <b>iOS (Safari):</b> Toca "aA" en la barra de direcciones y elige "Sitio web para computadoras".</small>
+        </div>
+        <button id="close-warning-btn" class="close-warning">×</button>
+    </div>
+
     <!-- Drag & Drop Overlay for File if fetch fails -->
     <div id="upload-overlay" class="overlay">
         <div class="upload-card">
@@ -31,8 +41,14 @@
     <!-- Dashboard Main Layout -->
     <div id="dashboard" class="dashboard-container" style="display: none;">
         <header>
-            <div class="logo">DECSATECH <span class="accent">PRO</span></div>
-            <div class="header-info">Presupuestador de Componentes</div>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="logo">DECSATECH <span class="accent">PRO</span></div>
+                <div id="version-badge" class="badge" style="display: none;"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="header-info">Presupuestador de Componentes</div>
+                <button id="change-list-btn" class="action-btn outline" style="margin-bottom: 0; padding: 0.5rem 1rem; width: auto; font-size: 0.85rem;">Cambiar Lista</button>
+            </div>
         </header>
 
         <main class="grid-layout">

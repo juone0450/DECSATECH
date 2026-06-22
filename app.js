@@ -23,6 +23,10 @@ const clearCartBtn = document.getElementById('clear-cart-btn');
 const exportBtn = document.getElementById('export-btn');
 const copyBtn = document.getElementById('copy-btn');
 const fetchOnlineBtn = document.getElementById('fetch-online-btn');
+const versionBadge = document.getElementById('version-badge');
+const changeListBtn = document.getElementById('change-list-btn');
+const mobileWarningBanner = document.getElementById('mobile-warning-banner');
+const closeWarningBtn = document.getElementById('close-warning-btn');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,6 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
     exportBtn.addEventListener('click', exportCart);
     copyBtn.addEventListener('click', copyCart);
     if (fetchOnlineBtn) fetchOnlineBtn.addEventListener('click', loadOnlineExcel);
+    if (changeListBtn) changeListBtn.addEventListener('click', () => {
+        uploadOverlay.style.display = 'flex';
+    });
+    if (closeWarningBtn && mobileWarningBanner) {
+        closeWarningBtn.addEventListener('click', () => {
+            mobileWarningBanner.style.display = 'none';
+        });
+    }
 });
 
 // Try to auto-load the file if served via HTTP
@@ -46,7 +58,7 @@ async function attemptAutoLoad() {
         const res = await fetch('Lista_de_Precios_Decsatech.xlsx');
         if (!res.ok) throw new Error("File not available via fetch");
         const arrayBuffer = await res.arrayBuffer();
-        processExcel(arrayBuffer);
+        processExcel(arrayBuffer, "Carga Local", "badge-local");
     } catch (e) {
         console.log("Could not auto-load file. Waiting for manual upload.");
         uploadOverlay.style.display = 'flex';
@@ -64,7 +76,7 @@ async function loadOnlineExcel() {
         const res = await fetch(rawUrl);
         if (!res.ok) throw new Error("No se pudo descargar el archivo online");
         const arrayBuffer = await res.arrayBuffer();
-        processExcel(arrayBuffer);
+        processExcel(arrayBuffer, "Online (GitHub)", "badge-online");
     } catch (e) {
         console.error(e);
         alert("Hubo un error al cargar la lista desde GitHub. Verifica tu conexión.");
@@ -81,13 +93,14 @@ function handleFileUpload(e) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = e.target.result;
-        processExcel(data);
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        processExcel(data, `Local - ${time}`, "badge-local");
     };
     reader.readAsArrayBuffer(file);
 }
 
 // Process the Excel buffer
-function processExcel(buffer) {
+function processExcel(buffer, sourceName = "Local", sourceClass = "badge-local") {
     try {
         const workbook = XLSX.read(buffer, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
@@ -131,6 +144,12 @@ function processExcel(buffer) {
         // Hide overlay, show dashboard
         uploadOverlay.style.display = 'none';
         dashboard.style.display = 'flex';
+        
+        if (versionBadge) {
+            versionBadge.textContent = sourceName;
+            versionBadge.className = `badge ${sourceClass}`;
+            versionBadge.style.display = 'inline-block';
+        }
         
         renderProducts();
     } catch (error) {
