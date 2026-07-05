@@ -1,12 +1,6 @@
+const xlsx = require('xlsx');
 const fs = require('fs');
-const XLSX = require('./xlsx.full.min.js');
-const buffer = fs.readFileSync('Lista_de_Precios_Decsatech.xlsx');
-const workbook = XLSX.read(buffer, {type: 'buffer'});
+const workbook = xlsx.readFile('Lista para Armador pc.xlsx');
 const sheetName = workbook.SheetNames[0];
-const sheet = workbook.Sheets[sheetName];
-const data = XLSX.utils.sheet_to_json(sheet, {header: 1});
-console.log("Sheet Name:", sheetName);
-console.log("Data sample (first 10 rows):");
-data.slice(0, 10).forEach(row => console.log(row));
-console.log("\nRow 20-30:");
-data.slice(20, 30).forEach(row => console.log(row));
+const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName], {header: 1});
+fs.writeFileSync('excel_data2.json', JSON.stringify(data, null, 2), 'utf8');

@@ -1,176 +1,211 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Decsatech | Armado de Presupuestos</title>
-    <meta name="description" content="Dashboard para crear presupuestos de PC sumando componentes de la lista de precios Decsatech.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Configurador de PC a Medida</title>
+    
+    <!-- SEO & Open Graph (WhatsApp, Facebook, etc.) -->
+    <meta name="description" content="Diseña, cotiza y arma la PC de tus sueños a tu medida. Explora nuestro configurador interactivo, elige los mejores componentes y obtén el rendimiento que necesitas para gaming o trabajo.">
+    <meta property="og:title" content="Configurador de PC a Medida - Arma tu Setup">
+    <meta property="og:description" content="Diseña, cotiza y arma la PC de tus sueños a tu medida. Explora nuestro configurador interactivo, elige los mejores componentes y obtén el rendimiento que necesitas para gaming o trabajo.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/juanmartinbarrientos/Mis-Redes/main/LandingPage/pc_a_medida.jpg">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://juanmartinbarrientos.github.io/LandingPage/"> <!-- Ajustar URL final si es distinta -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Phosphor Icons for modern iconography -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-    <!-- Toast Container -->
-    <div id="toast-container" class="toast-container"></div>
-    <!-- Mobile Desktop Mode Warning Popup -->
-    <div id="mobile-warning-banner" class="overlay mobile-warning-overlay">
-        <div class="upload-card">
-            <h2 style="color: var(--accent); margin-bottom: 1rem; border-bottom: none;">💡 Recomendación</h2>
-            <div class="warning-content" style="text-align: left; margin-bottom: 1.5rem; line-height: 1.5;">
-                <p style="margin-bottom: 1rem; color: var(--text-main);">Para una mejor experiencia, activa el <strong>"Sitio de escritorio"</strong> en tu navegador.</p>
-                <small style="color: var(--text-muted); display: block; margin-bottom: 0.5rem;">• <b>Android (Chrome):</b> Toca los 3 puntos (⋮) arriba a la derecha y elige "Sitio para computadoras".</small>
-                <small style="color: var(--text-muted); display: block;">• <b>iOS (Safari):</b> Toca "aA" en la barra de direcciones y elige "Sitio web para computadoras".</small>
+    
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="header card">
+            <div class="logo">
+                <i class="ph-fill ph-wrench"></i>
+                <h1>Configurador de PC</h1>
             </div>
-            <button id="close-warning-btn" class="action-btn primary" style="width: 100%; font-size: 1rem; padding: 0.8rem;">Entendido</button>
-        </div>
-    </div>
-
-    <!-- Drag & Drop Overlay for File if fetch fails -->
-    <div id="upload-overlay" class="overlay">
-        <div class="upload-card" style="position: relative;">
-            <button id="close-upload-btn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 2rem; color: var(--text-muted); cursor: pointer; line-height: 1; display: none;" title="Cerrar">&times;</button>
-            <h1 id="upload-title">Bienvenido a Decsatech</h1>
-            <p>Por favor, carga el archivo <strong>Lista_de_Precios_Decsatech.xlsx</strong> o usa la versión online para comenzar.</p>
-            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
-                <button id="fetch-online-btn" class="upload-btn" style="width: 100%; max-width: 300px; border: none; font-family: var(--font-family);">Cargar versión Online</button>
-                <div style="color: var(--text-muted); font-size: 0.9rem;">— o selecciona un archivo local —</div>
-                <label class="upload-btn" style="background: transparent; border: 1px solid var(--accent); color: var(--accent); width: 100%; max-width: 300px;">
-                    Seleccionar Archivo
-                    <input type="file" id="file-input" accept=".xlsx, .xls" />
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dashboard Main Layout -->
-    <div id="dashboard" class="dashboard-container" style="display: none;">
-        <header>
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="logo">DECSATECH <span class="accent">PRO</span></div>
-                <div id="version-badge" class="badge" style="display: none;"></div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div class="dollar-widget" title="Cotización del dólar utilizada para la conversión">
-                    <span>💵 Dólar:</span>
-                    <input type="number" id="dollar-rate-input" value="1" min="1" step="0.5" />
-                </div>
-                <div class="currency-toggle" id="currency-toggle-container">
-                    <span id="currency-ars" class="active">ARS</span>
-                    <span id="currency-usd">USD</span>
-                </div>
-                <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" title="Aplica el porcentaje de rentabilidad al catálogo y oculta los costos base">
-                    <input type="checkbox" id="client-view-toggle" />
-                    👁️ Vista Cliente
-                </label>
-                <div style="width: 1px; height: 24px; background: var(--border); margin: 0 0.5rem;"></div>
-                <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" title="Cambiar a Modo Claro">
-                    <input type="checkbox" id="light-mode-toggle" />
-                    ☀️ Modo Claro
-                </label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); cursor: pointer; font-size: 0.9rem;" title="Estilo Minimalista de Google">
-                    <input type="checkbox" id="google-theme-toggle" />
-                    ✨ Estilo Google
-                </label>
-                <div class="header-info" style="border-left: 1px solid var(--border); padding-left: 1rem;">Presupuestador de Componentes</div>
-                <button id="change-list-btn" class="action-btn outline" style="margin-bottom: 0; padding: 0.5rem 1rem; width: auto; font-size: 0.85rem;">Cambiar Lista</button>
+            <div class="theme-toggle">
+                <span>Elegir motivo</span>
+                <button id="btn-light-theme" class="theme-btn active" title="Modo Claro">
+                    <i class="ph-fill ph-sun"></i>
+                </button>
+                <button id="btn-dark-theme" class="theme-btn" title="Modo Oscuro">
+                    <i class="ph-fill ph-moon"></i>
+                </button>
             </div>
         </header>
 
-        <main class="grid-layout">
-            <!-- Left Panel: Products -->
-            <section class="panel products-panel">
-                <h2>Catálogo de Productos</h2>
-                
-                <div class="filters">
-                    <input type="text" id="search-input" placeholder="Buscar por descripción o SKU..." />
-                    <select id="category-filter">
-                        <option value="">Todas las Categorías</option>
-                        <!-- Options generated dynamically -->
-                    </select>
-                    <select id="sort-filter">
-                        <option value="">Sin ordenar</option>
-                        <option value="price-asc">Precio: Menor a Mayor</option>
-                        <option value="price-desc">Precio: Mayor a Menor</option>
-                    </select>
+        <main class="configurator-main">
+            <!-- SECTION 1: PLATFORM -->
+            <section class="config-section card">
+                <div class="section-header">
+                    <h2>1. SELECCIONAR PLATAFORMA / SOCKET</h2>
+                    <span class="badge required">Obligatorio</span>
                 </div>
-
-                <div class="table-container">
-                    <table id="products-table">
-                        <thead>
-                            <tr>
-                                <th>Descripción</th>
-                                <th>Categoría</th>
-                                <th>Precio (<span id="price-currency-label">ARS</span>)</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody id="products-body">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
+                <div class="platform-options" id="platform-container">
+                    <button class="platform-btn" data-socket="AM4">AM4</button>
+                    <button class="platform-btn" data-socket="AM5">AM5</button>
+                    <button class="platform-btn" data-socket="LGA1200">LGA1200</button>
+                    <button class="platform-btn" data-socket="LGA1700">LGA1700</button>
+                    <button class="platform-btn" data-socket="LGA1851">LGA1851</button>
                 </div>
             </section>
 
-            <!-- Right Panel: Cart / Build -->
-            <section class="panel build-panel">
-                <div class="panel-header-custom">
-                    <h2>Tu Presupuesto</h2>
-                    <div class="markup-control">
-                        <label for="markup-input">Rentabilidad (%):</label>
-                        <input type="number" id="markup-input" value="0" min="0" step="1" title="Porcentaje de aumento para los componentes" />
+            <!-- CORE COMPONENTS CONTAINER -->
+            <div class="components-container card">
+                
+                <!-- 2. PROCESADOR -->
+                <div class="form-group">
+                    <label for="cpu">2. PROCESADOR</label>
+                    <div class="select-wrapper">
+                        <select id="cpu" class="custom-select" disabled>
+                            <option value="">-- Seleccione plataforma primero --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down select-icon"></i>
                     </div>
                 </div>
-                <div id="cart-items" class="cart-items">
-                    <!-- Cart items populated dynamically -->
-                    <div class="empty-cart">No hay componentes en el presupuesto.</div>
+
+                <!-- 3. MOTHERBOARD -->
+                <div class="form-group">
+                    <label for="motherboard">3. MOTHERBOARD</label>
+                    <div class="select-wrapper">
+                        <select id="motherboard" class="custom-select" disabled>
+                            <option value="">-- Seleccione plataforma primero --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down select-icon"></i>
+                    </div>
                 </div>
 
-                <div class="cart-summary">
-                    <input type="text" id="client-name-input" class="client-input" placeholder="Nombre del cliente (opcional)..." />
-                    
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span id="subtotal-val">$0.00</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Total</span>
-                        <span id="total-val" class="accent-text">$0.00</span>
-                    </div>
-
-                    <div class="discount-section">
-                        <label for="custom-total-input">Total Personalizado (ARS):</label>
-                        <input type="number" id="custom-total-input" placeholder="Ej: 500000" />
-                        <div id="discount-info" class="discount-info" style="display: none;">
-                            <span>Descuento:</span>
-                            <span id="discount-val" class="success-text">$0.00 (0%)</span>
+                <!-- 4. MEMORIA RAM -->
+                <div class="form-group row-group">
+                    <div class="flex-grow">
+                        <label for="ram">4. MEMORIA RAM</label>
+                        <div class="select-wrapper">
+                            <select id="ram" class="custom-select" disabled>
+                                <option value="">-- Seleccione Mother primero --</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down select-icon"></i>
                         </div>
                     </div>
+                    <div class="qty-group">
+                        <label for="ram-qty">CANTIDAD</label>
+                        <div class="select-wrapper">
+                            <select id="ram-qty" class="custom-select" disabled>
+                                <option value="1">x1</option>
+                                <option value="2">x2</option>
+                                <option value="4">x4</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down select-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    <button id="save-budget-btn" class="action-btn primary" style="background: var(--text-main); color: var(--bg-main);">Guardar Presupuesto</button>
-                    <button id="load-budget-btn" class="action-btn outline" style="border-color: var(--text-main); color: var(--text-main);">Mis Presupuestos</button>
-                    <button id="clear-cart-btn" class="action-btn outline">Limpiar Todo</button>
-                    <button id="export-btn" class="action-btn primary">Exportar Presupuesto</button>
-                    <button id="pdf-btn" class="action-btn primary" style="background: #e74c3c; color: white;">Exportar a PDF</button>
-                    <button id="copy-btn" class="action-btn primary">Copiar Presupuesto</button>
+            <!-- OTHER COMPONENTS CONTAINER -->
+            <div class="components-container card">
+                
+                <!-- 5. ALMACENAMIENTO (Dynamic List) -->
+                <div class="form-group">
+                    <label>5. ALMACENAMIENTO</label>
+                    <div id="storage-list">
+                        <!-- Dynamic storage rows will be appended here -->
+                    </div>
+                    <button id="add-storage-btn" class="btn-dashed">
+                        <i class="ph-bold ph-plus"></i> Agregar disco
+                    </button>
+                </div>
+
+                <!-- 6. GABINETE -->
+                <div class="form-group">
+                    <label for="case">6. GABINETE</label>
+                    <div class="select-wrapper">
+                        <select id="case" class="custom-select">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down select-icon"></i>
+                    </div>
+                </div>
+
+                <!-- 7. FUENTE -->
+                <div class="form-group">
+                    <label for="psu">7. FUENTE</label>
+                    <div class="select-wrapper">
+                        <select id="psu" class="custom-select">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down select-icon"></i>
+                    </div>
+                </div>
+
+                <!-- 8. PLACA DE VIDEO -->
+                <div class="form-group">
+                    <label for="gpu">8. PLACA DE VIDEO</label>
+                    <div class="select-wrapper">
+                        <select id="gpu" class="custom-select">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down select-icon"></i>
+                    </div>
+                </div>
+
+                <!-- 9. REFRIGERACIÓN -->
+                <div class="form-group">
+                    <label for="cooling">9. REFRIGERACIÓN</label>
+                    <div class="select-wrapper">
+                        <select id="cooling" class="custom-select">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down select-icon"></i>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SUMMARY / VISUALIZER -->
+            <section class="config-section card summary-card">
+                <div class="section-header">
+                    <h2><i class="ph-bold ph-receipt"></i> RESUMEN DE COMPRA</h2>
+                </div>
+                
+                <div class="bulk-discount-wrapper">
+                    <label for="buy-multiple" class="bulk-discount-label">
+                        <input type="checkbox" id="buy-multiple" class="bulk-checkbox">
+                        <span>Comprar 3 unidades y obtener descuento</span>
+                    </label>
+                    <div id="whatsapp-info" class="whatsapp-info">
+                        <p style="margin-bottom: 12px;">Desbloqueá un descuento especial llevando 3 unidades.</p>
+                        <button id="whatsapp-btn" class="btn-whatsapp">
+                            <i class="ph-bold ph-whatsapp-logo"></i> Consultar por WhatsApp
+                        </button>
+                    </div>
+                </div>
+
+                <div class="summary-content" id="summary-content">
+                    <p class="empty-summary">Aún no has seleccionado componentes.</p>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Saved Budgets Overlay -->
-    <div id="saved-budgets-overlay" class="overlay" style="display: none;">
-        <div class="upload-card saved-budgets-card" style="position: relative; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
-            <button id="close-saved-budgets-btn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 2rem; color: var(--text-muted); cursor: pointer; line-height: 1;" title="Cerrar">&times;</button>
-            <h2 style="margin-bottom: 1.5rem; text-align: left; color: var(--text-main);">Mis Presupuestos Guardados</h2>
-            <div id="saved-budgets-list" class="saved-budgets-list" style="overflow-y: auto; flex: 1; text-align: left; padding-right: 10px;">
-                <!-- Populated dynamically -->
+    <!-- STICKY FOOTER -->
+    <footer class="sticky-footer">
+        <div class="footer-content">
+            <div class="price-container">
+                <span class="price-label">TOTAL IVA INCLUÍDO</span>
+                <span class="price-value" id="total-price">$ 0,00</span>
             </div>
+            <button id="copy-config-btn" class="btn-primary">
+                Copiar configuración
+            </button>
         </div>
-    </div>
+    </footer>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Configuración copiada al portapapeles</div>
+
+    <script src="xlsx.full.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

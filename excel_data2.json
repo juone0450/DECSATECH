@@ -1,0 +1,339 @@
+[
+  [
+    "Componente",
+    "Precio"
+  ],
+  [
+    "Coler CPU"
+  ],
+  [
+    "COOLER CPU KELYX P95W AMD/INTEL",
+    13800
+  ],
+  [
+    "Memoria ddr4 8GB"
+  ],
+  [
+    "MEMORIA DDR4 8GB 3200MHZ MFR HYNIX OEM",
+    80800
+  ],
+  [
+    "MEMORIA PUSKIL DDR4 8GB 3200HZ",
+    95300
+  ],
+  [
+    "MEMORIA WICGTYP UDIMM 8GB DDR4 3200MHz",
+    105800
+  ],
+  [
+    "MEMORIA DDR4 8GB HIKSEMI 3200MHZ SINGLE TRAY",
+    109600
+  ],
+  [
+    "Memoria ddr4 16gb"
+  ],
+  [
+    "MEMORIA DDR4 16GB 3200MHZ MFR HYNIX OEM",
+    148059
+  ],
+  [
+    "MEMORIA WICGTYP UDIMM 16GB DDR4 3200MHz",
+    189400
+  ],
+  [
+    "MEMORIA DDR4 16384MB 16GB 3200MHZ PUSKILL KILLBLADE",
+    192600
+  ],
+  [
+    "MEMORIA DDR4 16GB 3200MHZ HIKSEMI HIKER U-DIMM",
+    202080
+  ],
+  [
+    "Memoria DDR4 Kingston 8Gb 3200 MHz 16Gbit",
+    206100
+  ],
+  [
+    "Memoria ddr4 32gb"
+  ],
+  [
+    "MEMORIA DDR4 32GB MEMOX 3200MHZ",
+    403300
+  ],
+  [
+    "MEMORIA NETAC BASIC DDR4 3200MHZ 32GB UDIMM C22",
+    460000
+  ],
+  [
+    "Memoria ddr5 8gb"
+  ],
+  [
+    "MEMORIA DDR5 8GB 5600MHZ WICGTYP CL46 SILVER C/DISIPADOR",
+    202080
+  ],
+  [
+    "MEMORIA RAM PATRIOT 8GB DDR5-5600",
+    202540
+  ],
+  [
+    "MEMORIA DDR5 8GB MEMOX 5600MHZ",
+    220700
+  ],
+  [
+    "MEMORIA ADATA XPG UDIMM LANCER BLADE RGB BLACK 8GB DDR5 5600MHz",
+    227100
+  ],
+  [
+    "MEMORIA UDIMM ADATA 8GB DDR5 5600MHz CL46",
+    230099
+  ],
+  [
+    "memoria ddr5 16gb"
+  ],
+  [
+    "MEMORIA DDR5 16GB MEMOX 4800MHZ",
+    317700
+  ],
+  [
+    "MEMORIA DDR5 16GB 5600MHZ WICGTYP CL46 SILVER C/DISIPADOR",
+    355040
+  ],
+  [
+    "MEMORIA ADATA XPG UDIMM LANCER BLADE RGB BLACK 16GB DDR5 5600MHz",
+    370800
+  ],
+  [
+    "MEMORIA ADATA XPG UDIMM LANCER BLADE RGB BLACK 16GB DDR5 6000MHz",
+    397000
+  ],
+  [
+    "MEMORIA DDR5 16GB ADATA 5600MHZ",
+    406900
+  ],
+  [
+    "Memoria ddr5 32gb"
+  ],
+  [
+    "MEMORIA DDR5 32GB MEMOX 5600MHZ",
+    715700
+  ],
+  [
+    "Memoria Ddr5 32 Gb 6400 Mhz Patriot Viper Venom Cl32 (2X16Gb)",
+    756400
+  ],
+  [
+    "Memoria Ram UDIMM ADATA 32GB DDR5 5600MHz CL46",
+    776100
+  ],
+  [
+    "ADATA XPG UDIMM LANCER BLADE RGB BLACK 32GB DDR5 6000MHz CL30",
+    887700
+  ],
+  [
+    "Procesador socket am4"
+  ],
+  [
+    "PROCESADOR AMD RYZEN 3 3200G RADEON BULK 8 (4C/4T) SIN COOLER",
+    97400
+  ],
+  [
+    "Procesador RYZEN 5 3400G TRAY",
+    135600
+  ],
+  [
+    "PROCESADOR AMD (AM4) RYZEN 5 5600GT",
+    278000
+  ],
+  [
+    "PROCESADOR AMD (AM4) RYZEN 7 5700G",
+    331000
+  ],
+  [
+    "Procesador socket am5"
+  ],
+  [
+    "PROCESADOR AMD (AM5) RYZEN 5 8500G",
+    245300
+  ],
+  [
+    "PROCESADOR AMD (AM5) RYZEN 7 8700G",
+    421200
+  ],
+  [
+    "Procesador socket 1700"
+  ],
+  [
+    "PROCESADOR INTEL CORE I5-10500T BULK 6C/12T Intel HD 630 SIN COOLER",
+    206000
+  ],
+  [
+    "PROCESADOR INTEL ALDERLAKE CORE I3-12100 OEM 4C/8T S1700",
+    254600
+  ],
+  [
+    "CPU INTEL CORE I5-12400 S1700 TRAY SIN COOLER",
+    349000
+  ],
+  [
+    "PROCESADOR INTEL (LGA1700) CORE I5 13400",
+    402000
+  ],
+  [
+    "Microprocesador Intel I7-12700 25MB 3.6 GHz Socket 1700",
+    623000
+  ],
+  [
+    "CPU INTEL CORE I7-14700 RAPTORLAKE S1700 BOX",
+    703000
+  ],
+  [
+    "Mother intel socket 1700"
+  ],
+  [
+    "MOTHER H510M-K V2 UD GIGABYTE LGA1200",
+    118000
+  ],
+  [
+    "Motherboard GIGABYTE H610M K DDR4 LGA1700 DDR4",
+    107600
+  ],
+  [
+    "Motherboard MSI PRO H610M-G LGA1700 DDR5",
+    104900
+  ],
+  [
+    "Motherboard ASUS PRIME H610M-F D4 R2.0 LGA 1700 DDR4",
+    108800
+  ],
+  [
+    "MOTHER GIGABYTE (LGA1700) H610M K DDR4",
+    109800
+  ],
+  [
+    "MOTHER B760M-E PRO MSI DDR5 S1700",
+    179100
+  ],
+  [
+    "MOTHER ASUS (LGA1700) PRIME B760M-A D4 CSM",
+    188075
+  ],
+  [
+    "Mother socxket AM4"
+  ],
+  [
+    "MOTHER ASUS (AM4) PRIME A520M-K",
+    91200
+  ],
+  [
+    "Motherboard ASUS PRIME A520M-K/CSM AM4 DDR4",
+    92200
+  ],
+  [
+    "MB ASUS AM4 PRIME B550M-K DDR4 BOX M-ATX",
+    147300
+  ],
+  [
+    "MOTHER B550M K GIGABYTE AM4",
+    148700
+  ],
+  [
+    "MOTHER ASUS PRIME B650M-A WIFI II",
+    252600
+  ],
+  [
+    "Motherboard ASUS TUF GAMING B650EM-E WIFII AM5",
+    311000
+  ],
+  [
+    "DISCO SSD SATA"
+  ],
+  [
+    "DISCO SSD 120GB FANXIANG S101 2.5 SATA",
+    37000
+  ],
+  [
+    "DISCO SSD 240GB FANXIANG S101 2.5 SATA",
+    68200
+  ],
+  [
+    "SSD 240GB HIKSEMI WAVE S",
+    77900
+  ],
+  [
+    "Disco SSD MSI 240GB SPATIUM S270 SATA 2.5",
+    86000
+  ],
+  [
+    "DISCO SSD 480GB FANXIANG S101 2.5 SATA",
+    123600
+  ],
+  [
+    "SSD 480GB MSI SPATIUM S270 SATA 6.0GB/S",
+    135900
+  ],
+  [
+    "DISCO SSD 480GB HIKSEMI WAVE SATA 3.0",
+    138200
+  ],
+  [
+    "DISCO SSD 960GB HIKSEMI WAVE SATA 3.0",
+    219900
+  ],
+  [
+    "DISCO SSD 1TB FANXIANG S101 2.5 SATA",
+    222300
+  ],
+  [
+    "SSD 960GB MEMOX SATA 2.5",
+    222637
+  ],
+  [
+    "SSD NVME"
+  ],
+  [
+    "SSD M.2 NVME 256GB G3 MEMOX",
+    90400
+  ],
+  [
+    "SSD M.2 NVME 256GB G3 HIKSEMI WAVE",
+    92800
+  ],
+  [
+    "SSD M.2 NVME 512GB G3 HIKSEMI WAVE",
+    143000
+  ],
+  [
+    "SSD M.2 NVME 512GB G3 MEMOX",
+    144500
+  ],
+  [
+    "Disco SSD M.2 KINGSTON SNV3S 500GB NVMe PCIe 4.0",
+    210900
+  ],
+  [
+    "Disco Interno SSD WD Green SN350 1TB M.2 2280 NVMe PCIe 3.0 2400MB/S",
+    288400
+  ],
+  [
+    "Disco Interno SSD Sandisk Plus 1TB M.2 2280 NVMe PCIe 3.0 3200Mb/s",
+    295000
+  ],
+  [
+    "Gabinete"
+  ],
+  [
+    "GABINETE SENTEY KIT TM40 C/FUENTE LNZ 600w-LX",
+    44700
+  ],
+  [
+    "GAB PERF KITX3 MATE TEC+MOU+PSU 500W",
+    36686
+  ],
+  [
+    "Gabinete Aconcawa Core Office (GB-KIT0014) 500w ITX Tclado y Mouse",
+    35900
+  ],
+  [
+    "Gabinete Magnum Tech MT-K835 600w Mouse - Teclado - Parlantes",
+    37300
+  ]
+]
